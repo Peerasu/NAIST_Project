@@ -48,8 +48,10 @@ def create_label_for_40_mag(name, count, date, death, annot_40_path):
 if __name__ == '__main__':
     data_path = '../Image'
     annot_path = '../annotation/label.csv'
-    train_data_path = '../Image_train'
-    test_data_path = '../Image_test'
+    # train_data_path = '../Image_train'
+    # test_data_path = '../Image_test'
+    train_data_path = '../../../../../mnt/d/peerasu/Image_train'
+    test_data_path = '../../../../../mnt/d/peerasu/Image_test'
     train_annot_path = '../annotation/label_train.csv'
     test_annot_path = '../annotation/label_test.csv'
     

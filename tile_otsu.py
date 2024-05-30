@@ -123,15 +123,19 @@ def Tile_Image(tile_list, image_shape, tile_size):
 
 
 if __name__ == '__main__':
-    train_path = '../Image_train'
-    test_path = '../Image_test'
+    # train_path = '../Image_train'
+    # test_path = '../Image_test'
+    train_path = '../../../../../mnt/d/peerasu/Image_train'
+    test_path = '../../../../../mnt/d/peerasu/Image_test'
     annot_train_path = '../annotation/label_train.csv'
     annot_test_path = '../annotation/label_test.csv'
     
-    tile_train_path = '../Tile_train_2'
-    tile_test_path = '../Tile_test_2'
-    tile_annot_train_path = '../annotation/tile_label_train_2.csv'
-    tile_annot_test_path = '../annotation/tile_label_test_2.csv'
+    # tile_train_path = '../Tile_train'
+    # tile_test_path = '../Tile_test'
+    tile_train_path = '../../../../../mnt/d/peerasu/Tile_train'
+    tile_test_path = '../../../../../mnt/d/peerasu/Tile_test'
+    tile_annot_train_path = '../annotation/tile_label_train.csv'
+    tile_annot_test_path = '../annotation/tile_label_test.csv'
     
     tile_size = 224
     border_size = 10
