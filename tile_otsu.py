@@ -85,7 +85,7 @@ def Image_Show(image):
     b, g, r = cv2.split(image)
     image = cv2.merge([r, g, b])
     plt.imshow(image / 255)
-    plt.axis('off')
+    # plt.axis('off')
     plt.show()
     
 def Add_Border(image_list,Bold_Image_Size, bg_list):
@@ -139,7 +139,6 @@ if __name__ == '__main__':
     
     tile_size = 224
     border_size = 10
-
     
     os.makedirs(tile_train_path, exist_ok=True)
     os.makedirs(tile_test_path, exist_ok=True)
@@ -153,11 +152,11 @@ if __name__ == '__main__':
 
     for i, name in enumerate(annot_train_file['Sample_Name']):
         image = cv2.imread(os.path.join(train_path, name + '.' + 'png'))
-        image_list, thres, w_num, h_num, bg_list = do_image_cut(image, tile_size, name, tile_train_path, annot_train_path, tile_annot_train_path)
+        tile_list, thres, w_num, h_num, bg_list = do_image_cut(image, tile_size, name, tile_train_path, annot_train_path, tile_annot_train_path)
         
-        # # SHOW FULL IMAGE FROM PATCH
+        # # SHOW FULL TILE FROM PATCH
         # Image_Show(image)
-        # Border_List = Add_Border(image_list, border_size, bg_list)
+        # Border_List = Add_Border(tile_list, border_size, bg_list)
         # # Tile_list = []
         # # for bord in Border_List:
         # #     if bg_list[i] == 0:
@@ -170,11 +169,11 @@ if __name__ == '__main__':
         
     for i, name in enumerate(annot_test_file['Sample_Name']):
         image = cv2.imread(os.path.join(test_path, name + '.' + 'png'))
-        image_list, thres, w_num, h_num, bg_list = do_image_cut(image, tile_size, name, tile_test_path, annot_test_path, tile_annot_test_path)
+        tile_list, thres, w_num, h_num, bg_list = do_image_cut(image, tile_size, name, tile_test_path, annot_test_path, tile_annot_test_path)
         
-        # # SHOW FULL IMAGE FROM PATCH
+        # # SHOW FULL TILE FROM PATCH
         # Image_Show(image)
-        # Border_List = Add_Border(image_list, border_size, bg_list)
+        # Border_List = Add_Border(tile_list, border_size, bg_list)
         # new_tile_size = tile_size + border_size * 2
         # image_shape = [w_num, h_num]
         # Image_Tile = Tile_Image(Border_List, image_shape, new_tile_size)
