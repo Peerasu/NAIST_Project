@@ -18,7 +18,8 @@ import torchvision
 def do_random_revolve(image,s=0.5,):
     size=image.shape[1]
     # s=0.5
-    image_copy=np.uint8(image*255)
+    # image_copy=np.uint8(image)
+    image_copy = image
     img_pil = Image.fromarray(image_copy)
 
     Image_Resize=torchvision.transforms.RandomResizedCrop(size=size)(img_pil)
@@ -30,7 +31,7 @@ def do_random_revolve(image,s=0.5,):
     # plt.imshow(Image_Resize_Flip)
     # plt.show()
     #
-    images_test=np.array(Image_Resize_Flip)/255.0
+    images_test=np.array(Image_Resize_Flip)
     return images_test
 
 
@@ -61,25 +62,25 @@ def do_random_rot90(image):
 def do_random_contast(image, mag=0.3):
     alpha = 1 + random.uniform(-1,1)*mag
     image = image * alpha
-    image = np.clip(image,0,1)
+    image = np.clip(image, 0, 255)
     return image
 
 def do_random_hsv(image, mag=[0.15,0.25,0.25]):
-    image = (image*255).astype(np.uint8)
+    # image = (image).astype(np.uint8)
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-    h = hsv[:, :, 0].astype(np.float32)  # hue
-    s = hsv[:, :, 1].astype(np.float32)  # saturation
-    v = hsv[:, :, 2].astype(np.float32)  # value
+    h = hsv[:, :, 0]  # hue
+    s = hsv[:, :, 1]  # saturation
+    v = hsv[:, :, 2]  # value
     h = (h*(1 + random.uniform(-1,1)*mag[0]))%180
     s =  s*(1 + random.uniform(-1,1)*mag[1])
     v =  v*(1 + random.uniform(-1,1)*mag[2])
 
-    hsv[:, :, 0] = np.clip(h,0,180).astype(np.uint8)
-    hsv[:, :, 1] = np.clip(s,0,255).astype(np.uint8)
-    hsv[:, :, 2] = np.clip(v,0,255).astype(np.uint8)
+    hsv[:, :, 0] = np.clip(h,0,180)
+    hsv[:, :, 1] = np.clip(s,0,255)
+    hsv[:, :, 2] = np.clip(v,0,255)
     image = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
-    image = image.astype(np.float32)/255
+    # image = image.astype(np.float32)
     return image
 
 
@@ -87,7 +88,7 @@ def do_random_noise(image, mag=0.1):
     height, width = image.shape[:2]
     noise = np.random.uniform(-1,1, (height, width,1))*mag
     image = image + noise
-    image = np.clip(image,0,1)
+    image = np.clip(image, 0, 255)
     return image
 
 def do_random_rotate_scale(image, angle=35, scale=[0.6,1.4] ):
@@ -99,5 +100,5 @@ def do_random_rotate_scale(image, angle=35, scale=[0.6,1.4] ):
     
     transform = cv2.getRotationMatrix2D(center, angle, scale)
     image = cv2.warpAffine( image, transform, (width, height), flags=cv2.INTER_LINEAR,
-                            borderMode=cv2.BORDER_CONSTANT, borderValue=(0,0,0))
+                            borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
     return image

@@ -14,12 +14,16 @@ def do_thresholding(img):
     return thres, thres_img, img_c
 
 
-def do_image_cut(image, tile_size, name, save_path, annot_path, tile_annot_path, Cut=1):
+def do_image_cut(image, tile_size, name, save_path, annot_path, tile_annot_path, resize_original_data_path, Cut=1):
     # image = cv2.resize(image, dsize=(resize, resize), interpolation=cv2.INTER_LINEAR)
     # print(image.shape)
-    Thres_,_,_ = do_thresholding(image)
+    
+    original_name = '_'.join((name.split('_'))[:-1])
+    original_image = cv2.imread(os.path.join(resize_original_data_path, original_name + '_resize' + '.' + 'png'))
+    
+    Thres_,_,_ = do_thresholding(original_image)
     tile_size = int(tile_size)
-    Image_Thres = (Thres_ - 20) * tile_size * tile_size * 3
+    Image_Thres = (Thres_ - 22) * tile_size * tile_size * 3
     # print(Image_Thres, Thres_)
     image_shape = image.shape
     h_num = int(math.ceil(image_shape[0] / tile_size))
@@ -115,30 +119,38 @@ def Tile_Image(tile_list, image_shape, tile_size):
     
     index = 0
     for i in range(h_num):
-        tile_image = tile_list[index]
         for j in range(w_num):
+            tile_image = tile_list[index]
             image[i*tile_size:(i+1)*tile_size, j*tile_size:(j+1)*tile_size] = tile_image
             index+=1
     return image
 
 
+def Add_Border_Show(image_list,Bold_Image_Size):
+    New_List_Image=[]
+    for i, image in enumerate(image_list):
+        img = cv2.copyMakeBorder(image, Bold_Image_Size, Bold_Image_Size, Bold_Image_Size, Bold_Image_Size,
+                                        cv2.BORDER_CONSTANT,
+                                        value=(0, 0, 0))
+        New_List_Image.append(img)
+    return New_List_Image
+
+
 if __name__ == '__main__':
-    # train_path = '../Image_train'
-    # test_path = '../Image_test'
-    train_path = '../../../../../mnt/d/peerasu/Image_train'
-    test_path = '../../../../../mnt/d/peerasu/Image_test'
-    annot_train_path = '../annotation/label_train.csv'
-    annot_test_path = '../annotation/label_test.csv'
+    resize_original_data_path = '../../../../../mnt/d/peerasu/Resize_Image'
     
-    # tile_train_path = '../Tile_train'
-    # tile_test_path = '../Tile_test'
-    tile_train_path = '../../../../../mnt/d/peerasu/Tile_train'
-    tile_test_path = '../../../../../mnt/d/peerasu/Tile_test'
-    tile_annot_train_path = '../annotation/tile_label_train.csv'
-    tile_annot_test_path = '../annotation/tile_label_test.csv'
+    train_path = '../../../../../mnt/d/peerasu/Image_train_3'
+    test_path = '../../../../../mnt/d/peerasu/Image_test_3'
+    annot_train_path = '../annotation/label_train_3.csv'
+    annot_test_path = '../annotation/label_test_3.csv'
+    
+    tile_train_path = '../../../../../mnt/d/peerasu/Tile_train_3'
+    tile_test_path = '../../../../../mnt/d/peerasu/Tile_test_3'
+    tile_annot_train_path = '../annotation/tile_label_train_3.csv'
+    tile_annot_test_path = '../annotation/tile_label_test_3.csv'
     
     tile_size = 224
-    border_size = 10
+    border_size = 5
     
     os.makedirs(tile_train_path, exist_ok=True)
     os.makedirs(tile_test_path, exist_ok=True)
@@ -149,33 +161,68 @@ if __name__ == '__main__':
     annot_test_file = pd.read_csv(annot_test_path)
     length_test = len(annot_test_file['Sample_Name'])
     
+    
 
-    for i, name in enumerate(annot_train_file['Sample_Name']):
-        image = cv2.imread(os.path.join(train_path, name + '.' + 'png'))
-        tile_list, thres, w_num, h_num, bg_list = do_image_cut(image, tile_size, name, tile_train_path, annot_train_path, tile_annot_train_path)
+    # for i, name in enumerate(annot_train_file['Sample_Name']):
+    #     image = cv2.imread(os.path.join(train_path, name + '.' + 'png'))
+    #     tile_list, thres, w_num, h_num, bg_list = do_image_cut(image, tile_size, name, tile_train_path, annot_train_path, tile_annot_train_path, resize_original_data_path)
         
-        # # SHOW FULL TILE FROM PATCH
-        # Image_Show(image)
-        # Border_List = Add_Border(tile_list, border_size, bg_list)
-        # # Tile_list = []
-        # # for bord in Border_List:
-        # #     if bg_list[i] == 0:
-        # #         bord[bord == 0] = 255
-        # #     Tile_list.append(bord)
-        # new_tile_size = tile_size + border_size * 2
-        # image_shape = [w_num, h_num]
-        # Image_Tile = Tile_Image(Border_List, image_shape, new_tile_size)
-        # Image_Show(Image_Tile)
+    #     # # SHOW FULL TILE FROM PATCH
+    #     # Image_Show(image)
+    #     # Border_List = Add_Border(tile_list, border_size, bg_list)
+    #     # # Tile_list = []
+    #     # # for bord in Border_List:
+    #     # #     if bg_list[i] == 0:
+    #     # #         bord[bord == 0] = 255
+    #     # #     Tile_list.append(bord)
+    #     # new_tile_size = tile_size + border_size * 2
+    #     # image_shape = [w_num, h_num]
+    #     # Image_Tile = Tile_Image(Border_List, image_shape, new_tile_size)
+    #     # Image_Show(Image_Tile)
+
         
-    for i, name in enumerate(annot_test_file['Sample_Name']):
-        image = cv2.imread(os.path.join(test_path, name + '.' + 'png'))
-        tile_list, thres, w_num, h_num, bg_list = do_image_cut(image, tile_size, name, tile_test_path, annot_test_path, tile_annot_test_path)
+    # for i, name in enumerate(annot_test_file['Sample_Name']):
+    #     image = cv2.imread(os.path.join(test_path, name + '.' + 'png'))
+    #     tile_list, thres, w_num, h_num, bg_list = do_image_cut(image, tile_size, name, tile_test_path, annot_test_path, tile_annot_test_path, resize_original_data_path)
         
-        # # SHOW FULL TILE FROM PATCH
-        # Image_Show(image)
-        # Border_List = Add_Border(tile_list, border_size, bg_list)
-        # new_tile_size = tile_size + border_size * 2
-        # image_shape = [w_num, h_num]
-        # Image_Tile = Tile_Image(Border_List, image_shape, new_tile_size)
-        # Image_Show(Image_Tile)
+    #     # # SHOW FULL TILE FROM PATCH
+    #     # Image_Show(image)
+    #     # Border_List = Add_Border(tile_list, border_size, bg_list)
+    #     # new_tile_size = tile_size + border_size * 2
+    #     # image_shape = [w_num, h_num]
+    #     # Image_Tile = Tile_Image(Border_List, image_shape, new_tile_size)
+    #     # Image_Show(Image_Tile)
+    
+    
+    
+    # # # TEST SAMPLE
+    # show_annot_file = []
+    # for i, name in enumerate(annot_train_file['Sample_Name']):
+    # # for i, name in enumerate(annot_test_file['Sample_Name']):
+    #     original_name = '_'.join((name.split('_'))[:-1])
+    #     if original_name == '37601_1_HE40':
+    #         show_annot_file.append(name)
+    
+    # Image_Tile_list = []
+    # num_square = int(math.sqrt(len(show_annot_file)))
+    # for i, name in enumerate(show_annot_file):
+    #     image = cv2.imread(os.path.join(train_path, name + '.' + 'png'))
+    #     tile_list, thres, w_num, h_num, bg_list = do_image_cut(image, tile_size, name, tile_train_path, annot_train_path, tile_annot_train_path, resize_original_data_path)
+    #     # image = cv2.imread(os.path.join(test_path, name + '.' + 'png'))
+    #     # tile_list, thres, w_num, h_num, bg_list = do_image_cut(image, tile_size, name, tile_test_path, annot_test_path, tile_annot_test_path)
+        
+    #     # SHOW FULL TILE FROM PATCH
+    #     Border_List = Add_Border(tile_list, border_size, bg_list)
+    #     new_tile_size = tile_size + border_size * 2
+    #     image_shape = [w_num, h_num]
+    #     Image_Tile = Tile_Image(Border_List, image_shape, new_tile_size)
+    #     Image_Tile_list.append(Image_Tile)
+    
+    # Border_List = Add_Border_Show(Image_Tile_list, border_size*2)
+    # new_tile_size = new_tile_size*w_num + border_size * 4
+    # image_shape = [num_square, num_square]
+    # Image_Tile = Tile_Image(Border_List, image_shape, new_tile_size)
+    # Image_Show(Image_Tile)
+    
+    
         
