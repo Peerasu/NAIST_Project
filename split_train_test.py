@@ -23,7 +23,7 @@ def create_40_mag_image(name, mag, data_path, save_path):
     # Image_Show(image)
     
     tile_list = []
-    tile_list_raw = []
+    # tile_list_raw = []
     
     count = 0
     for i in range(factor):
@@ -32,9 +32,9 @@ def create_40_mag_image(name, mag, data_path, save_path):
             new_image_name = name + f'_{count}.png'
             new_image_path = os.path.join(save_path, new_image_name)
             
-            Image_Show(new_image)
+            # Image_Show(new_image)
             
-            tile_list_raw.append(new_image)
+            # tile_list_raw.append(new_image)
             
             new_image = cv2.resize(new_image, dsize=(448, 448), interpolation=cv2.INTER_LINEAR)
             cv2.imwrite(new_image_path, new_image)
@@ -42,22 +42,21 @@ def create_40_mag_image(name, mag, data_path, save_path):
             count += 1
     
     
-    # SHOW FULL IMAGE FROM TILE - RAW
-    tile_size_raw = [h_length, w_length]
-    border_size = 5
-    w_num = factor; h_num = factor
+    # # SHOW FULL IMAGE FROM TILE - RAW
+    # tile_size_raw = [h_length, w_length]
+    # border_size = 5
+    # w_num = factor; h_num = factor
     
-    # image = cv2.imread(os.path.join(data_path, name + '.' + 'tif'))
-    # Image_Show(image)
-    # print(name)
+    # # image = cv2.imread(os.path.join(data_path, name + '.' + 'tif'))
+    # # Image_Show(image)
+    # # print(name)
 
-    Border_List = Add_Border(tile_list_raw, border_size)
-    new_tile_size = [tile_size_raw[0] + border_size*2, tile_size_raw[1] + border_size*2]
-    image_shape = [h_num, w_num]
-    Image_Tile = Tile_Image(Border_List, image_shape, new_tile_size)
-    Image_Show(Image_Tile)
+    # Border_List = Add_Border(tile_list_raw, border_size)
+    # new_tile_size = [tile_size_raw[0] + border_size*2, tile_size_raw[1] + border_size*2]
+    # image_shape = [h_num, w_num]
+    # Image_Tile = Tile_Image(Border_List, image_shape, new_tile_size)
+    # Image_Show(Image_Tile)
             
-    
     return count, tile_list, factor
             
 
@@ -124,16 +123,27 @@ def Resize_Original_Image(data_path, annot_path, resize_path):
 
 if __name__ == '__main__':
     data_path = '../../../../../mnt/d/peerasu/Image'
-    annot_path = '../annotation/label.csv'
-    resize_path = '../../../../../mnt/d/peerasu/Resize_Image'
+    annot_path = '../annotation_new/Annot.csv'
+    resize_path = '../../../../../mnt/d/peerasu/New/Resize_Image'
 
-    train_data_path = '../../../../../mnt/d/peerasu/Image_train_3'
-    test_data_path = '../../../../../mnt/d/peerasu/Image_test_3'
-    train_annot_path = '../annotation/label_train_3.csv'
-    test_annot_path = '../annotation/label_test_3.csv'
+    train_data_path = '../../../../../mnt/d/peerasu/New/Tile_Train'
+    val_data_path = '../../../../../mnt/d/peerasu/New/Tile_Val'
+    test_data_path = '../../../../../mnt/d/peerasu/New/Tile_Test'
     
-    os.makedirs(train_data_path, exist_ok=True)
-    os.makedirs(test_data_path, exist_ok=True)
+    train_annot_path = '../annotation_new/Annot_Train_Tile.csv'
+    val_annot_path = '../annotation_new/Annot_Val_Tile.csv'
+    test_annot_path = '../annotation_new/Annot_Test_Tile.csv'
+    
+    if not os.path.exists(resize_path):
+        os.makedirs(resize_path)
+        Resize_Original_Image(data_path, annot_path, resize_path)
+        
+    if not os.path.exists(train_data_path):
+        os.makedirs(train_data_path, exist_ok=True)
+    if not os.path.exists(val_data_path):
+        os.makedirs(val_data_path, exist_ok=True)
+    if not os.path.exists(test_data_path):
+        os.makedirs(test_data_path, exist_ok=True)
     
     annot_file = pd.read_csv(annot_path)
     length = len(annot_file['filename'])
@@ -141,93 +151,97 @@ if __name__ == '__main__':
     
     random.shuffle(index)
     
-    split_ratio = 0.8
-    train_index = index[:math.ceil(split_ratio*length)]
-    test_index = index[math.ceil(split_ratio*length):]
+    train_ratio = 0.8
+    train_index = index[:math.ceil(train_ratio*length)]
+    val_index = index[math.ceil(train_ratio*length): math.ceil((train_ratio + (1-train_ratio)/2)*length)]
+    test_index = index[math.ceil((train_ratio + (1-train_ratio)/2)*length):]
     
-    annot_train = annot_file.iloc[train_index]
-    annot_test = annot_file.iloc[test_index]
-    
-    # if os.path.exists(resize_path) == False:
-    #     os.makedirs(resize_path)
-    #     Resize_Original_Image(data_path, annot_path, resize_path)
-    
-
-    # for i, name in enumerate(sorted(annot_train['filename'])):
-    #     mag = int((name.split('_')[2]).split('HE')[-1])            
-    #     count, tile_list, factor = create_40_mag_image(name, mag, data_path, train_data_path)
-    #     create_label_for_40_mag(name, count, annot_train['lastfu_date'].iloc[i], annot_train['lastfu_death'].iloc[i], train_annot_path)
-            
-    #     # # SHOW FULL IMAGE FROM TILE
-    #     # tile_size = [448, 448]
-    #     # border_size = 5
-    #     # w_num = factor; h_num = factor
-        
-    
-    #     # Border_List = Add_Border(tile_list, border_size)
-    #     # new_tile_size_square = tile_size[0] + border_size * 2
-    #     # new_tile_size = [new_tile_size_square, new_tile_size_square]
-    #     # image_shape = [h_num, w_num]
-    #     # Image_Tile = Tile_Image(Border_List, image_shape, new_tile_size)
-    #     # Image_Show(Image_Tile)
-    
-    # for i, name in enumerate(sorted(annot_test['filename'])):
-    #     mag = int((name.split('_')[2]).split('HE')[-1])            
-    #     count, tile_list, factor = create_40_mag_image(name, mag, data_path, test_data_path)
-    #     create_label_for_40_mag(name, count, annot_test['lastfu_date'].iloc[i], annot_test['lastfu_death'].iloc[i], test_annot_path)
-        
-    #     # # SHOW FULL IMAGE FROM TILE
-    #     # tile_size = [448, 448]
-    #     # border_size = 5
-    #     # w_num = factor; h_num = factor
-        
-    
-    #     # Border_List = Add_Border(tile_list, border_size)
-    #     # new_tile_size_square = tile_size[0] + border_size * 2
-    #     # new_tile_size = [new_tile_size_square, new_tile_size_square]
-    #     # image_shape = [h_num, w_num]
-    #     # Image_Tile = Tile_Image(Border_List, image_shape, new_tile_size)
-    #     # Image_Show(Image_Tile)
+    annot_train = annot_file.iloc[sorted(train_index)]
+    annot_val = annot_file.iloc[sorted(val_index)]
+    annot_test = annot_file.iloc[sorted(test_index)]
     
     
-    
-    
-    # test_name = ['37601_1_HE4_01']
-    # test_name = ['03101_1_HE10']
-    # test_name = ['00603_1_HE20']
-    test_name = ['00603_1_HE20']
-    show_mag = [20]
-    show_annot_test = pd.DataFrame()
-    
-    for i, name in enumerate(annot_file['filename']):
-        if name in test_name:
-            # show_annot_test = (annot_file.iloc[i]).copy(deep=True)
-            show_annot_test = pd.concat([show_annot_test, annot_file.iloc[[i]]], axis=0)
-            
-    show_annot_test.reset_index(drop=True, inplace=True)
-    annot_train = show_annot_test.copy(deep=True)
-    # print(annot_test)
 
     for i, name in enumerate(sorted(annot_train['filename'])):
-        mag = int((name.split('_')[2]).split('HE')[-1])
-        if mag in show_mag:
-            # image = cv2.imread(os.path.join(data_path, name + '.' + 'tif'))q
-            # Image_Show(image)
-            print(name)
+        mag = int((name.split('_')[2]).split('HE')[-1])            
+        count, tile_list, factor = create_40_mag_image(name, mag, data_path, train_data_path)
+        create_label_for_40_mag(name, count, annot_train['lastfu_date'].iloc[i], annot_train['lastfu_death'].iloc[i], train_annot_path)
             
-            count, tile_list, factor = create_40_mag_image(name, mag, data_path, train_data_path)
-            create_label_for_40_mag(name, count, annot_train['lastfu_date'].iloc[i], annot_train['lastfu_death'].iloc[i], train_annot_path)
+        # # SHOW FULL IMAGE FROM TILE
+        # tile_size = [448, 448]
+        # border_size = 5
+        # w_num = factor; h_num = factor
+        
+    
+        # Border_List = Add_Border(tile_list, border_size)
+        # new_tile_size_square = tile_size[0] + border_size * 2
+        # new_tile_size = [new_tile_size_square, new_tile_size_square]
+        # image_shape = [h_num, w_num]
+        # Image_Tile = Tile_Image(Border_List, image_shape, new_tile_size)
+        # Image_Show(Image_Tile)
+    
+    for i, name in enumerate(sorted(annot_test['filename'])):
+        mag = int((name.split('_')[2]).split('HE')[-1])            
+        count, tile_list, factor = create_40_mag_image(name, mag, data_path, test_data_path)
+        create_label_for_40_mag(name, count, annot_test['lastfu_date'].iloc[i], annot_test['lastfu_death'].iloc[i], test_annot_path)
+        
+        # # SHOW FULL IMAGE FROM TILE
+        # tile_size = [448, 448]
+        # border_size = 5
+        # w_num = factor; h_num = factor
+        
+    
+        # Border_List = Add_Border(tile_list, border_size)
+        # new_tile_size_square = tile_size[0] + border_size * 2
+        # new_tile_size = [new_tile_size_square, new_tile_size_square]
+        # image_shape = [h_num, w_num]
+        # Image_Tile = Tile_Image(Border_List, image_shape, new_tile_size)
+        # Image_Show(Image_Tile)
+        
+    for i, name in enumerate(sorted(annot_val['filename'])):
+        mag = int((name.split('_')[2]).split('HE')[-1])            
+        count, tile_list, factor = create_40_mag_image(name, mag, data_path, val_data_path)
+        create_label_for_40_mag(name, count, annot_val['lastfu_date'].iloc[i], annot_val['lastfu_death'].iloc[i], val_annot_path)
+    
+    
+    
+    
+    
+    
+    
+    
+    # show_mag = [20]
+    # show_annot_test = pd.DataFrame()
+    
+    # for i, name in enumerate(annot_file['filename']):
+    #     if name in test_name:
+    #         # show_annot_test = (annot_file.iloc[i]).copy(deep=True)
+    #         show_annot_test = pd.concat([show_annot_test, annot_file.iloc[[i]]], axis=0)
             
-            # SHOW FULL IMAGE FROM TILE
-            tile_size = [448, 448]
-            border_size = 5
-            w_num = factor; h_num = factor
+    # show_annot_test.reset_index(drop=True, inplace=True)
+    # annot_train = show_annot_test.copy(deep=True)
+    # # print(annot_test)
+
+    # for i, name in enumerate(sorted(annot_train['filename'])):
+    #     mag = int((name.split('_')[2]).split('HE')[-1])
+    #     if mag in show_mag:
+    #         # image = cv2.imread(os.path.join(data_path, name + '.' + 'tif'))q
+    #         # Image_Show(image)
+    #         print(name)
+            
+    #         count, tile_list, factor = create_40_mag_image(name, mag, data_path, train_data_path)
+    #         create_label_for_40_mag(name, count, annot_train['lastfu_date'].iloc[i], annot_train['lastfu_death'].iloc[i], train_annot_path)
+            
+    #         # SHOW FULL IMAGE FROM TILE
+    #         tile_size = [448, 448]
+    #         border_size = 5
+    #         w_num = factor; h_num = factor
             
         
-            Border_List = Add_Border(tile_list, border_size)
-            new_tile_size_square = tile_size[0] + border_size * 2
-            new_tile_size = [new_tile_size_square, new_tile_size_square]
-            image_shape = [h_num, w_num]
-            Image_Tile = Tile_Image(Border_List, image_shape, new_tile_size)
-            Image_Show(Image_Tile)
+    #         Border_List = Add_Border(tile_list, border_size)
+    #         new_tile_size_square = tile_size[0] + border_size * 2
+    #         new_tile_size = [new_tile_size_square, new_tile_size_square]
+    #         image_shape = [h_num, w_num]
+    #         Image_Tile = Tile_Image(Border_List, image_shape, new_tile_size)
+    #         Image_Show(Image_Tile)
     

@@ -59,7 +59,7 @@ def do_random_rot90(image):
         image = cv2.rotate(image, r)
         return image
     
-def do_random_contast(image, mag=0.3):
+def do_random_contrast(image, mag=0.3):
     alpha = 1 + random.uniform(-1,1)*mag
     image = image * alpha
     image = np.clip(image, 0, 255)
@@ -79,7 +79,7 @@ def do_random_hsv(image, mag=[0.15,0.25,0.25]):
     hsv[:, :, 0] = np.clip(h,0,180)
     hsv[:, :, 1] = np.clip(s,0,255)
     hsv[:, :, 2] = np.clip(v,0,255)
-    image = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+    image = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
     # image = image.astype(np.float32)
     return image
 

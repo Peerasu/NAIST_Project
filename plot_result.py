@@ -4,19 +4,22 @@ import seaborn as sns
 
 def plot_graph():
     # Read the CSV file
-    df = pd.read_csv('../train_results/result_model_1.csv')
+    df = pd.read_csv('../Train_Results/result_model_1.csv')
 
     # Display the first few rows of the dataframe
     print(df.head())
 
-    # Plot the data
     plt.figure(figsize=(9, 6))
+    
+    # # Plot the data (Loss)
     # plt.plot(df['epoch'], df['train_loss'], marker='o', linestyle='-', color='b', label='Train_Loss')
     # plt.plot(df['epoch'], df['test_loss'], marker='o', linestyle='-', color='y', label='Test_Loss')
-    plt.plot(df['epoch'], df['test_accuracy'], marker='o', linestyle='-', color='y', label='Test_Accuracy')
-
-    # Add titles and labels
     # plt.title('Training Result')
+    # plt.xlabel('Epochs')
+    # plt.ylabel('Loss')
+    
+    # Plot the data (Accuracy)
+    plt.plot(df['epoch'], df['test_accuracy'], marker='o', linestyle='-', color='y', label='Test_Accuracy')
     plt.title('Test Accuracy Result')
     plt.xlabel('Epochs')
     plt.ylabel('% Accuracy')

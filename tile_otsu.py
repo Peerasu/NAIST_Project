@@ -137,61 +137,80 @@ def Add_Border_Show(image_list,Bold_Image_Size):
 
 
 if __name__ == '__main__':
-    resize_original_data_path = '../../../../../mnt/d/peerasu/Resize_Image'
+    resize_original_data_path = '../../../../../mnt/d/peerasu/New/Resize_Image'
     
-    train_path = '../../../../../mnt/d/peerasu/Image_train_3'
-    test_path = '../../../../../mnt/d/peerasu/Image_test_3'
-    annot_train_path = '../annotation/label_train_3.csv'
-    annot_test_path = '../annotation/label_test_3.csv'
+    train_path = '../../../../../mnt/d/peerasu/New/Tile_Train'
+    val_path = '../../../../../mnt/d/peerasu/New/Tile_Val'
+    test_path = '../../../../../mnt/d/peerasu/New/Tile_Test'
     
-    tile_train_path = '../../../../../mnt/d/peerasu/Tile_train_3'
-    tile_test_path = '../../../../../mnt/d/peerasu/Tile_test_3'
-    tile_annot_train_path = '../annotation/tile_label_train_3.csv'
-    tile_annot_test_path = '../annotation/tile_label_test_3.csv'
+    annot_train_path = '../annotation_new/Annot_Train_Tile.csv'
+    annot_val_path = '../annotation_new/Annot_Val_Tile.csv'
+    annot_test_path = '../annotation_new/Annot_Test_Tile.csv'
+    
+    patch_train_path = '../../../../../mnt/d/peerasu/New/Patch_Train'
+    patch_val_path = '../../../../../mnt/d/peerasu/New/Patch_Val'
+    patch_test_path = '../../../../../mnt/d/peerasu/New/Patch_Test'
+    
+    patch_annot_train_path = '../annotation_new/Patch_Annot_Train.csv'
+    patch_annot_val_path = '../annotation_new/Patch_Annot_Val.csv'
+    patch_annot_test_path = '../annotation_new/Patch_Annot_Test.csv'
     
     tile_size = 224
     border_size = 5
     
-    os.makedirs(tile_train_path, exist_ok=True)
-    os.makedirs(tile_test_path, exist_ok=True)
+    if not os.path.exists(patch_train_path):
+        os.makedirs(patch_train_path, exist_ok=True)
+    if not os.path.exists(patch_val_path):
+        os.makedirs(patch_val_path, exist_ok=True)
+    if not os.path.exists(patch_test_path):
+        os.makedirs(patch_test_path, exist_ok=True)
+
     
     annot_train_file = pd.read_csv(annot_train_path)
     length_train = len(annot_train_file['Sample_Name'])
+    
+    annot_val_file = pd.read_csv(annot_val_path)
+    length_val = len(annot_val_file['Sample_Name'])
     
     annot_test_file = pd.read_csv(annot_test_path)
     length_test = len(annot_test_file['Sample_Name'])
     
     
+    
+    for i, name in enumerate(annot_train_file['Sample_Name']):
+        image = cv2.imread(os.path.join(train_path, name + '.' + 'png'))
+        tile_list, thres, w_num, h_num, bg_list = do_image_cut(image, tile_size, name, patch_train_path, annot_train_path, patch_annot_train_path, resize_original_data_path)
+        
+        # # SHOW FULL TILE FROM PATCH
+        # Image_Show(image)
+        # Border_List = Add_Border(tile_list, border_size, bg_list)
+        # # Tile_list = []
+        # # for bord in Border_List:
+        # #     if bg_list[i] == 0:
+        # #         bord[bord == 0] = 255
+        # #     Tile_list.append(bord)
+        # new_tile_size = tile_size + border_size * 2
+        # image_shape = [w_num, h_num]
+        # Image_Tile = Tile_Image(Border_List, image_shape, new_tile_size)
+        # Image_Show(Image_Tile)
 
-    # for i, name in enumerate(annot_train_file['Sample_Name']):
-    #     image = cv2.imread(os.path.join(train_path, name + '.' + 'png'))
-    #     tile_list, thres, w_num, h_num, bg_list = do_image_cut(image, tile_size, name, tile_train_path, annot_train_path, tile_annot_train_path, resize_original_data_path)
         
-    #     # # SHOW FULL TILE FROM PATCH
-    #     # Image_Show(image)
-    #     # Border_List = Add_Border(tile_list, border_size, bg_list)
-    #     # # Tile_list = []
-    #     # # for bord in Border_List:
-    #     # #     if bg_list[i] == 0:
-    #     # #         bord[bord == 0] = 255
-    #     # #     Tile_list.append(bord)
-    #     # new_tile_size = tile_size + border_size * 2
-    #     # image_shape = [w_num, h_num]
-    #     # Image_Tile = Tile_Image(Border_List, image_shape, new_tile_size)
-    #     # Image_Show(Image_Tile)
-
+    for i, name in enumerate(annot_test_file['Sample_Name']):
+        image = cv2.imread(os.path.join(test_path, name + '.' + 'png'))
+        tile_list, thres, w_num, h_num, bg_list = do_image_cut(image, tile_size, name, patch_test_path, annot_test_path, patch_annot_test_path, resize_original_data_path)
         
-    # for i, name in enumerate(annot_test_file['Sample_Name']):
-    #     image = cv2.imread(os.path.join(test_path, name + '.' + 'png'))
-    #     tile_list, thres, w_num, h_num, bg_list = do_image_cut(image, tile_size, name, tile_test_path, annot_test_path, tile_annot_test_path, resize_original_data_path)
-        
-    #     # # SHOW FULL TILE FROM PATCH
-    #     # Image_Show(image)
-    #     # Border_List = Add_Border(tile_list, border_size, bg_list)
-    #     # new_tile_size = tile_size + border_size * 2
-    #     # image_shape = [w_num, h_num]
-    #     # Image_Tile = Tile_Image(Border_List, image_shape, new_tile_size)
-    #     # Image_Show(Image_Tile)
+        # # SHOW FULL TILE FROM PATCH
+        # Image_Show(image)
+        # Border_List = Add_Border(tile_list, border_size, bg_list)
+        # new_tile_size = tile_size + border_size * 2
+        # image_shape = [w_num, h_num]
+        # Image_Tile = Tile_Image(Border_List, image_shape, new_tile_size)
+        # Image_Show(Image_Tile)
+    
+    
+    for i, name in enumerate(annot_val_file['Sample_Name']):
+        image = cv2.imread(os.path.join(val_path, name + '.' + 'png'))
+        tile_list, thres, w_num, h_num, bg_list = do_image_cut(image, tile_size, name, patch_val_path, annot_val_path, patch_annot_val_path, resize_original_data_path)
     
     
     
@@ -200,7 +219,7 @@ if __name__ == '__main__':
     # for i, name in enumerate(annot_train_file['Sample_Name']):
     # # for i, name in enumerate(annot_test_file['Sample_Name']):
     #     original_name = '_'.join((name.split('_'))[:-1])
-    #     if original_name == '37601_1_HE40':
+    #     if original_name == '':
     #         show_annot_file.append(name)
     
     # Image_Tile_list = []
