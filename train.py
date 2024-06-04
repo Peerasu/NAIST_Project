@@ -103,7 +103,7 @@ num_classes = 3
 model._fc = nn.Linear(model._fc.in_features, num_classes)
 
 # Load our own good model
-model_path = '../../../../../mnt/d/peerasu/New/Models/model_1_epoch_10.pth'
+model_path = '../../../../../mnt/d/peerasu/New/Models/model_1_epoch_40.pth'
 model.load_state_dict(torch.load(model_path))
 
 
@@ -184,7 +184,7 @@ for epoch in range(num_epochs):
     model.train()
     running_loss = 0.0
 
-    print(f'####### Epoch {epoch+11}/{num_epochs} #######')
+    print(f'####### Epoch {epoch+41}/{num_epochs} #######')
 
     for i, (inputs, labels) in enumerate(tqdm(train_loader, unit='batch')):
         inputs, labels = inputs.to(device), labels.to(device)
@@ -236,7 +236,7 @@ for epoch in range(num_epochs):
     # Save epoch results to CSV
     epoch_results = {
         'model_num': [model_num],
-        'epoch': [epoch + 11],
+        'epoch': [epoch + 41],
         'learning_rate': [current_lr],
         'train_loss': [epoch_loss],
         'test_loss': [test_loss],
@@ -254,8 +254,8 @@ for epoch in range(num_epochs):
         pd.DataFrame(epoch_results).to_csv(result_file_path, header=True, index=False)
 
     # Save the model
-    torch.save(model.state_dict(), os.path.join(model_save_path, f'model_{model_num}_epoch_{epoch+11}.pth'))
+    torch.save(model.state_dict(), os.path.join(model_save_path, f'model_{model_num}_epoch_{epoch+41}.pth'))
 
-    print(f'------- Epoch {epoch+11}/{num_epochs}, Train Loss: {epoch_loss:.4f}, Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.2f}%, Learning Rate: {current_lr} -------')
+    print(f'------- Epoch {epoch+41}/{num_epochs}, Train Loss: {epoch_loss:.4f}, Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.2f}%, Learning Rate: {current_lr} -------')
 
 print('Training complete')
