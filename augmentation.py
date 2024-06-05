@@ -67,7 +67,7 @@ def do_random_contrast(image, mag=0.3):
 
 def do_random_hsv(image, mag=[0.15,0.25,0.25]):
     # image = (image).astype(np.uint8)
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
 
     h = hsv[:, :, 0]  # hue
     s = hsv[:, :, 1]  # saturation
@@ -102,3 +102,71 @@ def do_random_rotate_scale(image, angle=35, scale=[0.6,1.4] ):
     image = cv2.warpAffine( image, transform, (width, height), flags=cv2.INTER_LINEAR,
                             borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
     return image
+
+
+def Image_Show(image):
+    b, g, r = cv2.split(image)
+    image = cv2.merge([r, g, b])
+    plt.imshow(image / 255)
+    # plt.axis('off')
+    plt.show()
+
+def train_augment(image):
+    """
+    Performs the first set of data augmentation on the image during training.
+    Returns the augmented image.
+    """
+    
+    random_flip_choices = [
+        lambda image: do_random_flip(image),
+        lambda image: do_random_rot90(image)
+    ]
+    
+    rotate_scale_choices = [
+        lambda image: (image),
+        lambda image: do_random_rotate_scale(image, angle=45, scale=[0.8, 2])
+    ]
+    
+    contrast_choices = [
+        lambda image: (image),
+        lambda image: do_random_contrast(image, mag=np.random.rand()*0.5)
+    ]
+    
+    noise_hsv_choices = [
+        lambda image: (image),
+        lambda image: do_random_noise(image, mag=np.random.rand()*0.25),
+        lambda image: do_random_hsv(image, mag=[np.random.rand()*0.5, np.random.rand()*0.5, 0])
+    ]
+    
+    
+    if np.random.rand() < 0.5:
+        image = np.random.choice(random_flip_choices)(image)
+        if np.random.rand() < 0.8:
+            image = np.random.choice(rotate_scale_choices)(image)
+        if np.random.rand() < 0.8:
+            image = np.random.choice(contrast_choices)(image)
+        if np.random.rand() < 0.8:
+            image = np.random.choice(noise_hsv_choices)(image)
+            
+    return image
+
+
+import os
+import cv2
+
+if __name__ == '__main__':
+    annot_path = '../annotation_new/Label_Train_BL.csv'
+    img_dir = '../../../../../mnt/d/peerasu/New/Patch_Train_BL'
+    
+    img_name = ''
+    
+    img_path = os.path.join(img_dir, img_name + '.png')
+    
+    image = cv2.imread(img_path)
+    image = image.astype(np.float32)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    # Image_Show(image)
+    
+    # image = do_random_hsv(image, mag=[np.random.rand()*0.5, np.random.rand()*0.5, 0])
+    image = do_random_noise(image, mag=0.8)
+    Image_Show(image)

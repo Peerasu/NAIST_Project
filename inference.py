@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from torchvision import transforms
+from torchvision import transforms, models
 from PIL import Image
 import cv2
 import os
@@ -9,22 +9,24 @@ import pandas as pd
 from resnet import *
 from efficientnet_pytorch import EfficientNet
 import math
+from torchvision import models
 
 
 # Load the pre-trained EfficientNet-B0 model
-model = EfficientNet.from_pretrained('efficientnet-b0')
+# model = EfficientNet.from_pretrained('efficientnet-b0')
+model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
 
 # Modify the final fully connected layer to match the number of classes (e.g., 3 classes)
 num_classes = 3
-model._fc = nn.Linear(model._fc.in_features, num_classes)
+model.fc = nn.Linear(model.fc.in_features, num_classes)
 
 # Load our own good model
-model_path = '../../../../../mnt/d/peerasu/New/Models/model_1_epoch_37.pth'
+model_path = '../../../../../mnt/d/peerasu/New/Models_BL_ResNet/model_1_epoch_1.pth'
 model.load_state_dict(torch.load(model_path))
 
 # Move model to appropriate device
-# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-device = 'cpu'
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# device = 'cpu'
 model = model.to(device)
 
 # Define the transform (must match the training transform)
@@ -80,7 +82,7 @@ def create_40_mag_image(image, mag):
 #     return thres, thres_img, img_c
 
 
-def do_image_cut(original_image, tile, patch_size, Cut=1):
+def do_image_cut(tile, patch_size, Cut=1):
     # Thres_,_,_ = do_thresholding(original_image)
     patch_size = int(patch_size)
     # Image_Thres = (Thres_ - 22) * patch_size * patch_size * 3
@@ -98,6 +100,7 @@ def do_image_cut(original_image, tile, patch_size, Cut=1):
             for j in range(w_num):
                 patch = tile[i*patch_size:(i+1)*patch_size,j*patch_size:(j+1)*patch_size]
                 # background = 0
+                # patch = torch.tensor(patch, dtype=torch.float32, device=device)
                 patch_list.append(patch)
                 # bg_list.append(background)
     else:
@@ -112,7 +115,8 @@ def do_image_cut(original_image, tile, patch_size, Cut=1):
                 #     background = 0
                 # else:
                 #     background = 1
-    
+
+                # patch = torch.tensor(patch, dtype=torch.float32, device=device)
                 patch_list.append(patch)
                 # bg_list.append(background)
     return patch_list
@@ -132,11 +136,28 @@ def predict_image(name, image_path, model, patch_size=224):
     tile_list = create_40_mag_image(image, mag)
     patch_list = []
     for tile in tile_list:
-        patch_list.append(patch for patch in do_image_cut(tile, patch_size))
+        patch_list_from_tile = do_image_cut(tile, patch_size)
+        patch_list.extend(patch_list_from_tile)
         
     patch_predictions = [predict_patch(patch, model) for patch in patch_list]
+    
+    count = [0, 0, 0]    
+    for pred in patch_predictions:
+        if pred == 0:
+            count[0] += 1
+        elif pred == 1:
+            count[1] += 1
+        else:
+            count[2] += 1
+    print(f'Survive: {count[0]}, Death: {count[1]}, BG: {count[2]}')
+        
+    patch_predictions = [pred for pred in patch_predictions if pred in [0, 1]]
     aggregated_prediction = np.bincount(patch_predictions).argmax()  # Majority voting
-    return aggregated_prediction
+    
+    if count[0] == count[1]:
+        aggregated_prediction = 1
+        
+    return aggregated_prediction, count
 
 # Example usage on a directory of images
 val_images_dir = '../../../../../mnt/d/peerasu/Image'
@@ -149,12 +170,37 @@ image_names = [img for img in val_labels['Sample_Name']]
 # Evaluate the model on the test set
 correct = 0
 total = 0
+print(f'Total: {len(image_names)}')
+
+# patient_predict = {}
+conf = [0, 0, 0, 0]
 for i, name in enumerate(image_names):
+    # id = (name.split('_'))[0]
+    # patient_predict[id] = []
     true_label = val_labels.iloc[i]['Death']
-    predicted_label = predict_image(name, val_images_dir, model)
+    predicted_label, count = predict_image(name, val_images_dir, model)
+    # patient_predict[id].append(count)
     total += 1
     if predicted_label == true_label:
         correct += 1
+    print(f'GT: {true_label}, Predict: {predicted_label}')
+    
+    if predicted_label == 0 and true_label == 1:
+        conf[0] += 1
+    elif predicted_label == 1 and true_label == 1:
+        conf[1] += 1
+    elif predicted_label == 1 and true_label == 0:
+        conf[2] += 1
+    elif predicted_label == 0 and true_label == 0:
+        conf[3] += 1
+    
+    if total % 10 == 0 or total == len(image_names) - 1:
+        print(f'Correct: {correct} / {total}')
 
 accuracy = 100 * correct / total
 print(f'Validation Accuracy: {accuracy:.2f}%')
+
+print(conf)
+
+
+

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim import lr_scheduler
-from torchvision import datasets, transforms
+from torchvision import models, datasets, transforms
 from torch.utils.data import DataLoader, Dataset
 import pandas as pd
 import cv2
@@ -34,6 +34,7 @@ class CustomDataset(Dataset):
     def __getitem__(self, idx):
         img_name = os.path.join(self.img_dir, self.labels.iloc[idx, 0] + '.' + 'png')
         image = cv2.imread(img_name)
+        image = image.astype(np.float32)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         label = self.labels.iloc[idx, 1]
         
@@ -63,19 +64,27 @@ def train_augment(image):
         lambda image: do_random_rotate_scale(image, angle=45, scale=[0.8, 2])
     ]
     
-    augmentation_choices = [
+    contrast_choices = [
         lambda image: (image),
-        lambda image: do_random_noise(image, mag=0.1),
-        lambda image: do_random_contrast(image, mag=0.25)
+        lambda image: do_random_contrast(image, mag=np.random.rand()*0.5)
     ]
     
-    if np.random.rand() < 0.5:
+    noise_hsv_choices = [
+        lambda image: (image),
+        lambda image: do_random_noise(image, mag=np.random.rand()*0.25),
+        lambda image: do_random_hsv(image, mag=[np.random.rand()*0.5, np.random.rand()*0.5, 0])
+    ]
+    
+    
+    if np.random.rand() < 0.3:
         image = np.random.choice(random_flip_choices)(image)
         if np.random.rand() < 0.8:
             image = np.random.choice(rotate_scale_choices)(image)
-        if np.random.rand() < 0.5:
-            image = np.random.choice(augmentation_choices)(image)
-
+        if np.random.rand() < 0.8:
+            image = np.random.choice(contrast_choices)(image)
+        if np.random.rand() < 0.8:
+            image = np.random.choice(noise_hsv_choices)(image)
+            
     return image
 
 
@@ -89,26 +98,28 @@ transform = transforms.Compose([
 
 
 # Dataset and DataLoader
-train_dataset = CustomDataset(csv_file='../annotation_new/Label_Train.csv', img_dir='../../../../../mnt/d/peerasu/New/Patch_Train', transform=transform, do_augment=True)
+train_dataset = CustomDataset(csv_file='../annotation_new/Label_Train_BL.csv', img_dir='../../../../../mnt/d/peerasu/New/Patch_Train_BL', transform=transform, do_augment=True)
 test_dataset = CustomDataset(csv_file='../annotation_new/Label_Test.csv', img_dir='../../../../../mnt/d/peerasu/New/Patch_test', transform=transform, do_augment=False)
 
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=4)
 test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False, num_workers=4)
 
-# Load the pre-trained EfficientNet-B0 model
-model = EfficientNet.from_pretrained('efficientnet-b0')
+# # Load the pre-trained EfficientNet-B0 model
+# model = EfficientNet.from_pretrained('efficientnet-b0')
+model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
 
 # Modify the final fully connected layer to match the number of classes (e.g., 3 classes)
 num_classes = 3
-model._fc = nn.Linear(model._fc.in_features, num_classes)
+model.fc = nn.Linear(model.fc.in_features, num_classes)
 
 # Load our own good model
-model_path = '../../../../../mnt/d/peerasu/New/Models/model_1_epoch_40.pth'
+model_path = '../../../../../mnt/d/peerasu/New/Models_BL_ResNet/model_1_epoch_10.pth'
 model.load_state_dict(torch.load(model_path))
 
 
+
 class FocalLoss(nn.Module):
-    def __init__(self, alpha=None, gamma=2, reduction='mean'):
+    def __init__(self, alpha=None, gamma=3, reduction='mean'):
         super(FocalLoss, self).__init__()
         self.alpha = alpha
         self.gamma = gamma
@@ -136,6 +147,8 @@ class FocalLoss(nn.Module):
         else:
             return F_loss
 
+
+
 def compute_class_weights(frequencies):
     total = sum(frequencies)
     weights = [total / f for f in frequencies]
@@ -144,24 +157,23 @@ def compute_class_weights(frequencies):
     return torch.tensor(weights, dtype=torch.float32, device=device)
         
 # Compute classes distribution
-annot_train_file = pd.read_csv('../annotation_new/Patch_Annot_Train.csv')
-dis = [0, 0, 0]
+annot_train_file = pd.read_csv('../annotation_new/Label_Train_BL.csv')
+dist = [0, 0, 0]
 for i, raw in annot_train_file.iterrows():
-    if raw['Background'] == 0:
-        if raw['Death'] == 0:
-            dis[0] += 1
-        else:
-            dis[1] += 1
+    if int(raw['Label']) == 0:
+        dist[0] += 1
+    elif int(raw['Label']) == 1:
+        dist[1] += 1
     else:
-        dis[2] += 1
+        dist[2] += 1
         
 # Class frequencies
-class_frequencies = [dis[0], dis[1], dis[2]]
+class_frequencies = [dist[0], dist[1], dist[2]]
 class_weights = compute_class_weights(class_frequencies)
 
 # Loss function and optimizer
 criterion = FocalLoss(alpha=class_weights)
-optimizer = optim.Adam(model.parameters(), lr=0.0005)
+optimizer = optim.AdamW(model.parameters(), lr=0.0005)
 
 # Learning rate scheduler
 scheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)
@@ -172,8 +184,8 @@ num_epochs = 100
 model = model.to(device)
 
 # Create directory for saving models if it doesn't exist
-model_save_path = '../../../../../mnt/d/peerasu/New/Models'
-result_save_path = '../Train_Results'
+model_save_path = '../../../../../mnt/d/peerasu/New/Models_BL_ResNet'
+result_save_path = '../Train_Results_BL_ResNet'
 model_num = 1
 if not os.path.exists(model_save_path):
     os.makedirs(model_save_path)
@@ -184,7 +196,7 @@ for epoch in range(num_epochs):
     model.train()
     running_loss = 0.0
 
-    print(f'####### Epoch {epoch+41}/{num_epochs} #######')
+    print(f'####### Epoch {epoch+11}/{num_epochs} #######')
 
     for i, (inputs, labels) in enumerate(tqdm(train_loader, unit='batch')):
         inputs, labels = inputs.to(device), labels.to(device)
@@ -236,7 +248,7 @@ for epoch in range(num_epochs):
     # Save epoch results to CSV
     epoch_results = {
         'model_num': [model_num],
-        'epoch': [epoch + 41],
+        'epoch': [epoch + 11],
         'learning_rate': [current_lr],
         'train_loss': [epoch_loss],
         'test_loss': [test_loss],
@@ -254,8 +266,8 @@ for epoch in range(num_epochs):
         pd.DataFrame(epoch_results).to_csv(result_file_path, header=True, index=False)
 
     # Save the model
-    torch.save(model.state_dict(), os.path.join(model_save_path, f'model_{model_num}_epoch_{epoch+41}.pth'))
+    torch.save(model.state_dict(), os.path.join(model_save_path, f'model_{model_num}_epoch_{epoch+11}.pth'))
 
-    print(f'------- Epoch {epoch+41}/{num_epochs}, Train Loss: {epoch_loss:.4f}, Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.2f}%, Learning Rate: {current_lr} -------')
+    print(f'------- Epoch {epoch+11}/{num_epochs}, Train Loss: {epoch_loss:.4f}, Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.2f}%, Learning Rate: {current_lr} -------')
 
 print('Training complete')

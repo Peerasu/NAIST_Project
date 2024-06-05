@@ -4,7 +4,7 @@ import seaborn as sns
 
 def plot_graph():
     # Read the CSV file
-    df = pd.read_csv('../Train_Results/result_model_1.csv')
+    df = pd.read_csv('../Train_Results_BL/result_model_1.csv')
 
     # Display the first few rows of the dataframe
     print(df.head())
