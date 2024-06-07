@@ -158,7 +158,7 @@ if __name__ == '__main__':
     annot_path = '../annotation_new/Label_Train_BL.csv'
     img_dir = '../../../../../mnt/d/peerasu/New/Patch_Train_BL'
     
-    img_name = ''
+    img_name = '00603_1_HE20_2_0'
     
     img_path = os.path.join(img_dir, img_name + '.png')
     
@@ -168,5 +168,5 @@ if __name__ == '__main__':
     # Image_Show(image)
     
     # image = do_random_hsv(image, mag=[np.random.rand()*0.5, np.random.rand()*0.5, 0])
-    image = do_random_noise(image, mag=0.8)
+    image = do_random_rotate_scale(image, angle=random.randint(44, 45), scale=[1, 2])
     Image_Show(image)

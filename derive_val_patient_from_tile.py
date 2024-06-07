@@ -1,8 +1,8 @@
 import pandas as pd 
 
 
-annot_val_path = '../annotation_new/Annot_Val_Tile.csv'
-val_patient_path = '../annotation_new/Annot_Val_Patient_WSI.csv'
+annot_val_path = '../annotation_newnew/Annot_Test_Tile.csv'
+val_patient_path = '../annotation_newnew/Label_Test_WSI.csv'
 
 annot_val_file = pd.read_csv(annot_val_path)
 val_list = []

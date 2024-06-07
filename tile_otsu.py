@@ -29,7 +29,7 @@ def do_image_cut(image, tile_size, name, save_path, annot_path, tile_annot_path,
     h_num = int(math.ceil(image_shape[0] / tile_size))
     w_num = int(math.ceil(image_shape[1] / tile_size))
     # print(w_num, h_num)
-    image = cv2.resize(image, dsize=(h_num*tile_size, w_num*tile_size), interpolation=cv2.INTER_LINEAR)
+    image = cv2.resize(image, dsize=(w_num*tile_size, h_num*tile_size), interpolation=cv2.INTER_LINEAR)
     # Block = np.zeros((tile_size, tile_size, image.shape[2]), dtype=np.uint8)
     
     annot_file = pd.read_csv(annot_path)
@@ -137,23 +137,23 @@ def Add_Border_Show(image_list,Bold_Image_Size):
 
 
 if __name__ == '__main__':
-    resize_original_data_path = '../../../../../mnt/d/peerasu/New/Resize_Image'
+    resize_original_data_path = '../../../../../mnt/d/peerasu/NewNew/Resize_Image'
     
-    train_path = '../../../../../mnt/d/peerasu/New/Tile_Train'
-    val_path = '../../../../../mnt/d/peerasu/New/Tile_Val'
-    test_path = '../../../../../mnt/d/peerasu/New/Tile_Test'
+    train_path = '../../../../../mnt/d/peerasu/NewNew/Tile_Train'
+    val_path = '../../../../../mnt/d/peerasu/NewNew/Tile_Val'
+    test_path = '../../../../../mnt/d/peerasu/NewNew/Tile_Test'
     
-    annot_train_path = '../annotation_new/Annot_Train_Tile.csv'
-    annot_val_path = '../annotation_new/Annot_Val_Tile.csv'
-    annot_test_path = '../annotation_new/Annot_Test_Tile.csv'
+    annot_train_path = '../annotation_newnew/Annot_Train_Tile.csv'
+    annot_val_path = '../annotation_newnew/Annot_Val_Tile.csv'
+    annot_test_path = '../annotation_newnew/Annot_Test_Tile.csv'
     
-    patch_train_path = '../../../../../mnt/d/peerasu/New/Patch_Train'
-    patch_val_path = '../../../../../mnt/d/peerasu/New/Patch_Val'
-    patch_test_path = '../../../../../mnt/d/peerasu/New/Patch_Test'
+    patch_train_path = '../../../../../mnt/d/peerasu/NewNew/Patch_Train'
+    patch_val_path = '../../../../../mnt/d/peerasu/NewNew/Patch_Val'
+    patch_test_path = '../../../../../mnt/d/peerasu/NewNew/Patch_Test'
     
-    patch_annot_train_path = '../annotation_new/Patch_Annot_Train.csv'
-    patch_annot_val_path = '../annotation_new/Patch_Annot_Val.csv'
-    patch_annot_test_path = '../annotation_new/Patch_Annot_Test.csv'
+    patch_annot_train_path = '../annotation_newnew/Patch_Annot_Train.csv'
+    patch_annot_val_path = '../annotation_newnew/Patch_Annot_Val.csv'
+    patch_annot_test_path = '../annotation_newnew/Patch_Annot_Test.csv'
     
     tile_size = 224
     border_size = 5
@@ -219,7 +219,7 @@ if __name__ == '__main__':
     # for i, name in enumerate(annot_train_file['Sample_Name']):
     # # for i, name in enumerate(annot_test_file['Sample_Name']):
     #     original_name = '_'.join((name.split('_'))[:-1])
-    #     if original_name == '':
+    #     if original_name == '37601_1_HE40':
     #         show_annot_file.append(name)
     
     # Image_Tile_list = []

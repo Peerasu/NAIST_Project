@@ -6,36 +6,32 @@ from augmentation import *
 
 # Define your train_augment function here
 def train_augment(image):
-    """
-    Performs the first set of data augmentation on the image during training.
-    Returns the augmented image.
-    """
     image = do_random_flip(image)
     image = do_random_rot90(image)
     for fn in np.random.choice([
         lambda image: (image),
-        lambda image: do_random_noise(image, mag=0.1),
-        lambda image: do_random_contrast(image, mag=0.25)
-    ], 1): image = fn(image)
+        lambda image: do_random_noise(image, mag=np.random.rand()*0.25),
+        lambda image: do_random_contrast(image, mag=np.random.rand()*0.5)
+    ], 2): image = fn(image)
     
-    for fn in np.random.choice([
-        lambda image: (image),
-        lambda image: do_random_rotate_scale(image, angle=45, scale=[1, 2]),
-    ], 1): image = fn(image)
+    # for fn in np.random.choice([
+    #     lambda image: (image),
+    #     lambda image: do_random_rotate_scale(image, angle=45, scale=[1, 2]),
+    # ], 1): image = fn(image)
 
     return image
 
 # Path to your original dataset directory
-original_dataset_dir = '../../../../../mnt/d/peerasu/New/Patch_Train'
+original_dataset_dir = '../../../../../mnt/d/peerasu/NewNew/Patch_Train'
 
 # Path to the new dataset directory where augmented images will be saved
-new_dataset_dir = '../../../../../mnt/d/peerasu/New/Patch_Train_BL'
+new_dataset_dir = '../../../../../mnt/d/peerasu/NewNew/Patch_Train_BL'
 
 # Path to the true train label CSV file
-original_train_label = "../annotation_new/Label_Train.csv"
+original_train_label = "../annotation_newnew/Label_Train.csv"
 
 # Path to save the CSV file
-csv_file_path = "../annotation_new/Label_Train_BL.csv"
+csv_file_path = "../annotation_newnew/Label_Train_BL.csv"
 
 # Create the new dataset directory if it doesn't exist
 if not os.path.exists(new_dataset_dir):
